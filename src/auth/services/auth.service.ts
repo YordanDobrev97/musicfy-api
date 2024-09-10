@@ -8,10 +8,30 @@ import { JwtService } from '@nestjs/jwt'
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private jwtService: JwtService) {
+  constructor(private readonly prisma: PrismaService, private jwtService: JwtService) { }
+
+  async refreshAccessToken(refreshToken: string) {
+    try {
+      const decodedToken = await this.jwtService.verifyAsync(refreshToken)
+      const user = await this.prisma.user.findUnique({
+        where: { id: decodedToken.sub },
+      })
+
+      if (!user) {
+        throw new Error('User not found')
+      }
+
+      const payload = { email: user.email, sub: user.id }
+      const newAccessToken = this.jwtService.sign(payload, { expiresIn: '15m' })
+
+      return {
+        access_token: newAccessToken,
+      }
+    } catch (error) {
+      throw new Error('Invalid refresh token')
     }
+  }
+
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.prisma.user.findUnique({
