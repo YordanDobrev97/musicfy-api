@@ -7,7 +7,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe())
 
   app.enableCors({
-    origin: 'http://localhost:3000', // React клиентският ти адрес
+    origin: 'http://localhost:3000',
     methods: 'GET,POST,PUT,DELETE,OPTIONS',
   })
   await app.listen(5000)
